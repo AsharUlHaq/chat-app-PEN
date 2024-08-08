@@ -14,14 +14,42 @@ enum UserRole {
 
 model User {
   id        Int      @id @default(autoincrement())
-  isActive  Boolean  @default(false)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+  role      UserRole @default(USER)
   updatedAt DateTime @default(now()) @updatedAt
   username  String
   email     String   @unique
   password  String
-  role      UserRole @default(USER)
-  session   Session?
+  number    String   @unique
+  country   String
+  city      String
+  gender    String
+
+  chats    chat[]    @relation("UserChats")  // Relation name for chats
+  messages message[] @relation("UserMessages")  // Relation name for messages
+  session  Session?
+}
+
+model chat {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+  conversationId Int
+
+  users    User[]    @relation("UserChats")  // Relation name for users in a chat
+  messages message[]
+}
+
+model message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  content   String
+  chatId    Int
+  chat      chat     @relation(fields: [chatId], references: [id])
+  senderId  Int
+  sender    User     @relation(fields: [senderId], references: [id], name: "UserMessages")
 }
 
 model Session {
