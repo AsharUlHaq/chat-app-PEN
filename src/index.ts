@@ -3,18 +3,24 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { z } from "zod";
 import { ENV } from "./utils/env.util";
-//import { protect } from "./middleware/auth.middleware";
+import { protect } from "./middlewares/auth.middleware";
+import { authRoutes } from "./modules/auth/auth.route";
+import { userRoutes } from "./modules/user/user.route";
+import http from "http"
+import { setupWebSocketServer } from "./modules/websocket/websocket.server";
+import { Server } from "http";
 
 const app = express();
+app.use(express.json());
+const server = http.createServer(app);
 
-// app.use(express.json());
-// app.use((req, res, next) => {
-//     console.log("HTTP METHOD - " + req.method + " URL - " + req.url);
-//     next();
-// }
-// )
-
+// Setup WebSocket server
+setupWebSocketServer(server);
 app.get("/", (req, res) => {
+  res.send("WebSocket server is up and running!");
+});
+
+app.get("/",protect, (req, res) => {
   console.log("HTTP METHOD - " + req.method + " URL - " + req.url);
   //@ts-ignore
   console.log(req.userId);
@@ -24,7 +30,9 @@ app.get("/", (req, res) => {
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use("/",authRoutes)
+app.use("/",userRoutes)
 
-app.listen(ENV.PORT, () => {
+server.listen(ENV.PORT, () => {
   console.log(`Application running at http://localhost:${ENV.PORT}`);
 });

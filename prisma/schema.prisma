@@ -21,13 +21,10 @@ model User {
   username  String
   email     String   @unique
   password  String
-  number    String   @unique
-  country   String
-  city      String
-  gender    String
+  avatar    String
 
-  chats    chat[]    @relation("UserChats")  // Relation name for chats
-  messages message[] @relation("UserMessages")  // Relation name for messages
+  chats    chat[]    @relation("UserChats") // Relation name for chats
+  messages message[] @relation("UserMessages") // Relation name for messages
   session  Session?
 }
 
@@ -37,7 +34,7 @@ model chat {
   updatedAt      DateTime @default(now()) @updatedAt
   conversationId Int
 
-  users    User[]    @relation("UserChats")  // Relation name for users in a chat
+  users    User[]    @relation("UserChats") // Relation name for users in a chat
   messages message[]
 }
 
