@@ -9,6 +9,7 @@ import { userRoutes } from "./modules/user/user.route";
 import http from "http"
 import { setupWebSocketServer } from "./modules/websocket/websocket.server";
 import { Server } from "http";
+import { chatRoutes } from "./modules/chat/chat.route";
 
 const app = express();
 app.use(express.json());
@@ -32,6 +33,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use("/",authRoutes)
 app.use("/",userRoutes)
+app.use("/",chatRoutes)
 
 server.listen(ENV.PORT, () => {
   console.log(`Application running at http://localhost:${ENV.PORT}`);

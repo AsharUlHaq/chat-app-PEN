@@ -1,5 +1,5 @@
-// // src/websocket/websocket.server.ts
-//broadcasting to all clients
+// src/websocket/websocket.server.ts
+// broadcasting to all clients
 
 // import { WebSocketServer, WebSocket } from 'ws';
 // import { Server } from 'http';
@@ -158,11 +158,260 @@
 //     console.log('WebSocket server running at ws://localhost:5000');
 // };
 //----------------------------------------------------------------------------------------------------------
-import { WebSocketServer, WebSocket } from 'ws';
-import { Server } from 'http';
-import { PrismaClient } from '@prisma/client';
+// import { WebSocketServer, WebSocket } from 'ws';
+// import { Server } from 'http';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+
+// interface Client extends WebSocket {
+//     userId?: number; // Use the database user ID
+// }
+
+// export const setupWebSocketServer = (server: Server) => {
+//     const wss = new WebSocketServer({ server });
+//     const clients = new Map<number, Client>(); // Map to keep track of clients by their database IDs
+
+//     wss.on('connection', (ws: WebSocket) => {
+//         const client = ws as Client;
+
+//         ws.on('message', async (message: string) => {
+//             try {
+//                 const parsedMessage = JSON.parse(message);
+//                 const { email, content, recipientId } = parsedMessage;
+
+//                 if (!email) {
+//                     ws.send(JSON.stringify({ error: 'Invalid message format. Email is required.' }));
+//                     return;
+//                 }
+
+//                 // Fetch user from the database using the email
+//                 const user = await prisma.user.findUnique({
+//                     where: {
+//                         email: email,
+//                     },
+//                 });
+
+//                 if (!user) {
+//                     ws.send(JSON.stringify({ error: 'User not found.' }));
+//                     return;
+//                 }
+
+//                 const userId = user.id;
+//                 client.userId = userId; // Assign database user ID to client
+//                 console.log(`User with ID: ${userId} (Email: ${email}) connected`);
+
+//                 // Update clients map with database ID
+//                 clients.set(userId, client);
+
+//                 // Handle sending a message to a specific client using recipientId
+//                 if (recipientId && content) {
+//                     const recipientClient = clients.get(recipientId);
+
+//                     if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
+//                         recipientClient.send(JSON.stringify({ from: userId, content: content }));
+//                         console.log(`Message from ${userId} to ${recipientId}: ${content}`);
+//                     } else {
+//                         ws.send(JSON.stringify({ error: 'Recipient not found or not connected.' }));
+//                     }
+//                 }
+
+//             } catch (err:any) {
+//                 console.error('Failed to parse message or fetch user from database:', err.message);
+//                 ws.send(JSON.stringify({ error: `Invalid message format. Please send a JSON string. Received: ${message}` }));
+//             }
+//         });
+
+//         ws.on('close', () => {
+//             if (client.userId) {
+//                 clients.delete(client.userId); // Remove client from the map on disconnect
+//                 console.log(`Client with ID: ${client.userId} disconnected`);
+//             }
+//         });
+//     });
+
+//     console.log('WebSocket server running at ws://localhost:5000');
+// };
+// ---------------------------------------------------------------------------------------------------
+// import { WebSocketServer, WebSocket } from 'ws';
+// import { Server } from 'http';
+// import { PrismaClient } from '@prisma/client';
+// import jwt from 'jsonwebtoken';
+
+// const prisma = new PrismaClient();
+
+// interface Client extends WebSocket {
+//     userId?: number; // Use the database user ID
+// }
+
+// const SECRET_KEY = 'your_secret_key'; // Replace with your actual secret key
+
+// export const setupWebSocketServer = (server: Server) => {
+//     const wss = new WebSocketServer({ server });
+//     const clients = new Map<number, Client>(); // Map to keep track of clients by their database IDs
+
+//     wss.on('connection', (ws: WebSocket) => {
+//         const client = ws as Client;
+
+//         ws.on('message', async (message: string) => {
+//             try {
+//                 const parsedMessage = JSON.parse(message);
+                
+//                 // Check if the message is for authentication or other operations
+//                 if (parsedMessage.token) {
+//                     // Authenticate user with the token
+//                     const decoded = jwt.verify(parsedMessage.token, SECRET_KEY) as { id: number, email: string };
+//                     const userId = decoded.id;
+
+//                     // Store the authenticated user's ID in the client
+//                     client.userId = userId;
+
+//                     // Fetch the user from the database to confirm
+//                     const user = await prisma.user.findUnique({
+//                         where: { id: userId },
+//                     });
+
+//                     if (!user) {
+//                         ws.send(JSON.stringify({ error: 'User not found.' }));
+//                         return;
+//                     }
+
+//                     console.log(`User with ID: ${userId} (Email: ${user.email}) connected`);
+//                     clients.set(userId, client);
+//                     return;
+//                 }
+
+//                 const { content, recipientId } = parsedMessage;
+
+//                 // Handle sending a message to a specific client using recipientId
+//                 if (recipientId && content) {
+//                     const recipientClient = clients.get(recipientId);
+
+//                     if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
+//                         recipientClient.send(JSON.stringify({ from: client.userId, content: content }));
+//                         console.log(`Message from ${client.userId} to ${recipientId}: ${content}`);
+//                     } else {
+//                         ws.send(JSON.stringify({ error: 'Recipient not found or not connected.' }));
+//                     }
+//                 }
+//             } catch (err: any) {
+//                 console.error('Failed to parse message or verify token:', err.message);
+//                 ws.send(JSON.stringify({ error: `Failed to parse message or verify token: ${err.message}` }));
+//             }
+//         });
+
+//         ws.on('close', () => {
+//             if (client.userId) {
+//                 clients.delete(client.userId); // Remove client from the map on disconnect
+//                 console.log(`Client with ID: ${client.userId} disconnected`);
+//             }
+//         });
+//     });
+
+//     console.log('WebSocket server running at ws://localhost:5000');
+// };
+//--------------------------------------------------------------------------------------------------------
+// import { WebSocketServer, WebSocket } from 'ws';
+// import { Server } from 'http';
+// import { ENV } from '../../utils/env.util';
+// import prisma from '../../utils/db.util';
+// import jwt from 'jsonwebtoken';
+
+
+// const prismaClient = prisma;
+// const jwtSecret = ENV.JWT_SECRET;
+
+// interface Client extends WebSocket {
+//     userId?: number; // Use the database user ID
+// }
+
+// export const setupWebSocketServer = (server: Server) => {
+//     const wss = new WebSocketServer({ server });
+//     const clients = new Map<number, Client>(); // Map to keep track of clients by their database IDs
+
+//     wss.on('connection', (ws: WebSocket) => {
+//         const client = ws as Client;
+
+//         ws.on('message', async (message: string) => {
+//             try {
+//                 const parsedMessage = JSON.parse(message);
+//                 const { token, content, recipientId } = parsedMessage;
+
+//                 if (token) {
+//                     // Verify the JWT token
+//                     jwt.verify(token, jwtSecret, async (err: any, decoded: any) => {
+//                         if (err) {
+//                             ws.send(JSON.stringify({ error: 'Invalid token.' }));
+//                             return;
+//                         }
+
+//                         // Extract user ID from the token
+//                         const userId = decoded.userId;
+
+//                         // Ensure userId is valid before querying
+//                         if (!userId) {
+//                             ws.send(JSON.stringify({ error: 'User ID not found in token.' }));
+//                             return;
+//                         }
+
+//                         // Fetch user from the database
+//                         const user = await prismaClient.user.findUnique({
+//                             where: { id: userId },
+//                         });
+
+//                         if (!user) {
+//                             ws.send(JSON.stringify({ error: 'User not found.' }));
+//                             return;
+//                         }
+
+//                         client.userId = user.id;
+//                         console.log(`User with ID: ${user.id} connected`);
+
+//                         // Update clients map with database ID
+//                         clients.set(user.id, client);
+
+//                         // Handle sending a message to a specific client using recipientId
+//                         if (recipientId && content) {
+//                             const recipientClient = clients.get(recipientId);
+
+//                             if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
+//                                 recipientClient.send(JSON.stringify({ from: user.id, content: content }));
+//                                 console.log(`Message from ${user.id} to ${recipientId}: ${content}`);
+//                             } else {
+//                                 ws.send(JSON.stringify({ error: 'Recipient not found or not connected.' }));
+//                             }
+//                         }
+//                     });
+//                 } else {
+//                     ws.send(JSON.stringify({ error: 'No token provided.' }));
+//                 }
+
+//             } catch (err: any) {
+//                 console.error('Failed to parse message or fetch user from database:', err.message);
+//                 ws.send(JSON.stringify({ error: `Invalid message format. Received: ${message}` }));
+//             }
+//         });
+
+//         ws.on('close', () => {
+//             if (client.userId) {
+//                 clients.delete(client.userId); // Remove client from the map on disconnect
+//                 console.log(`Client with ID: ${client.userId} disconnected`);
+//             }
+//         });
+
+//         ws.on('error', (error) => {
+//             console.error('WebSocket error:', error);
+//         });
+//     });
+
+//     console.log('WebSocket server running at ws://localhost:5000');
+// };
+//---------------------------------------------------------------------------------------------------
+import { WebSocketServer, WebSocket } from 'ws'; //WebSocketServer creates a WebSocket server, and WebSocket represents a WebSocket connection.
+import { Server } from 'http'; //This is used to create an HTTP server, which the WebSocket server will use to handle connections.
+import prisma from '../../utils/db.util';
+
+const prismaClient = prisma;
 
 interface Client extends WebSocket {
     userId?: number; // Use the database user ID
@@ -170,55 +419,61 @@ interface Client extends WebSocket {
 
 export const setupWebSocketServer = (server: Server) => {
     const wss = new WebSocketServer({ server });
-    const clients = new Map<number, Client>(); // Map to keep track of clients by their database IDs
+    const clients = new Map<number, Client>(); // Map to store connected clients by user ID
 
-    wss.on('connection', (ws: WebSocket) => {
+    wss.on('connection', async (ws: WebSocket, request: any) => {
+        // Extract user ID from headers
+        const userId = parseInt(request.headers.id as string, 10);
+
+        if (!userId) {
+            ws.send(JSON.stringify({ error: 'User ID not found.' }));
+            ws.close();
+            return;
+        }
+
+        // Fetch user from the database
+        const user = await prismaClient.user.findUnique({ where: { id: userId } });
+
+        if (!user) {
+            ws.send(JSON.stringify({ error: 'User not found.' }));
+            ws.close();
+            return;
+        }
+
+        // Store the client in the map
         const client = ws as Client;
+        client.userId = user.id;
+        clients.set(user.id, client);
 
-        ws.on('message', async (message: string) => {
+        console.log(`User with ID: ${user.id} connected`);
+
+        // Handle incoming messages
+        ws.on('message', (message: string) => {
             try {
                 const parsedMessage = JSON.parse(message);
-                const { email, content, recipientId } = parsedMessage;
+                const { recipientId, content } = parsedMessage;
 
-                if (!email) {
-                    ws.send(JSON.stringify({ error: 'Invalid message format. Email is required.' }));
+                // Check if recipientId is valid
+                if (!recipientId || !content) {
+                    ws.send(JSON.stringify({ error: 'Invalid message format. Must include recipientId and content.' }));
                     return;
                 }
 
-                // Fetch user from the database using the email
-                const user = await prisma.user.findUnique({
-                    where: {
-                        email: email,
-                    },
-                });
+                // Find the recipient's client connection
+                const recipientClient = clients.get(recipientId);
 
-                if (!user) {
-                    ws.send(JSON.stringify({ error: 'User not found.' }));
-                    return;
+                if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
+                    recipientClient.send(JSON.stringify({
+                        from: user.id,
+                        content: content,
+                    }));
+                    console.log(`Message from ${user.id} to ${recipientId}: ${content}`);
+                } else {
+                    ws.send(JSON.stringify({ error: 'Recipient not found or not connected.' }));
                 }
-
-                const userId = user.id;
-                client.userId = userId; // Assign database user ID to client
-                console.log(`User with ID: ${userId} (Email: ${email}) connected`);
-
-                // Update clients map with database ID
-                clients.set(userId, client);
-
-                // Handle sending a message to a specific client using recipientId
-                if (recipientId && content) {
-                    const recipientClient = clients.get(recipientId);
-
-                    if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
-                        recipientClient.send(JSON.stringify({ from: userId, content: content }));
-                        console.log(`Message from ${userId} to ${recipientId}: ${content}`);
-                    } else {
-                        ws.send(JSON.stringify({ error: 'Recipient not found or not connected.' }));
-                    }
-                }
-
-            } catch (err:any) {
-                console.error('Failed to parse message or fetch user from database:', err.message);
-                ws.send(JSON.stringify({ error: `Invalid message format. Please send a JSON string. Received: ${message}` }));
+            } catch (error) {
+                console.error('Failed to parse message:', error);
+                ws.send(JSON.stringify({ error: 'Invalid message format.' }));
             }
         });
 
@@ -228,7 +483,20 @@ export const setupWebSocketServer = (server: Server) => {
                 console.log(`Client with ID: ${client.userId} disconnected`);
             }
         });
+
+        ws.on('error', (error) => {
+            console.error('WebSocket error:', error);
+        });
     });
 
     console.log('WebSocket server running at ws://localhost:5000');
 };
+
+
+
+//note: Storing connected clients in a Map is a common and effective practice when working with WebSocket servers, especially when you need to manage one-to-one communication between clients. Here are some considerations regarding this approach:
+
+// Benefits of Using a Map:
+// Efficient Lookups: The Map data structure provides an efficient way to associate client connections with unique identifiers (such as user IDs). Lookups, insertions, and deletions in a Map are generally fast, making it suitable for managing real-time connections.
+
+// Direct Access to Clients: By storing clients in a Map with their user IDs as keys, you can directly access a specific client's WebSocket connection, which is crucial for one-on-one communication.
