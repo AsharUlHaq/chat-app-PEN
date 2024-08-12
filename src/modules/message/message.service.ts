@@ -11,3 +11,15 @@ export async function createMessage(chatId: number, senderId: number, content: s
 
     return message;
 }
+
+export async function saveMessage(chatId: number, senderId: number, content: string) {
+    const message = await prisma.message.create({
+        data: {
+            chatId: chatId,
+            senderId: senderId,
+            content: content,
+        },
+    });
+
+    return message;
+}

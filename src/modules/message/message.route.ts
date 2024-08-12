@@ -1,9 +1,9 @@
-import { Router } from "express";
-import { createMessageHandler } from "./message.controller";
-import { protect } from "../../middlewares/auth.middleware";
+// import { Router } from "express";
+// import { createMessageHandler } from "./message.controller";
+// import { protect } from "../../middlewares/auth.middleware";
 
-const messageRoutes = Router();
+// const messageRoutes = Router();
 
-messageRoutes.post("/send-message", protect, createMessageHandler);
+// messageRoutes.post("/send-message", protect, createMessageHandler);
 
-export { messageRoutes };
+// export { messageRoutes };
