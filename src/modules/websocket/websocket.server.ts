@@ -129,6 +129,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
 import prisma from '../../utils/db.util';
 import jwt from 'jsonwebtoken'; // Ensure you have this package installed
+import { ENV } from '../../utils/env.util';
+import { parse } from 'path';
 
 const prismaClient = prisma;
 
@@ -142,28 +144,39 @@ export const setupWebSocketServer = (server: Server) => {
     const clients = new Map<number, Client>(); 
 
     wss.on('connection', async (ws: WebSocket, request: any) => {
-        // Extract JWT token from headers (e.g., Authorization: Bearer <token>)
-        const authHeader = request.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-
+        const tokenParam = request.url.split("?")[1] as string | undefined;
+        if(!tokenParam){
+            ws.send(JSON.stringify({ error: 'Token not found.' }));
+            ws.close();
+            return;
+        }
+        
+        const splitedToken = tokenParam.split("=");
+        const key = splitedToken[0];
+        if(key !== "token"){
+            ws.send(JSON.stringify({ error: 'Token not found.' }));
+            ws.close();
+            return;
+        }
+        const token = splitedToken[1]; 
+    
         if (!token) {
             ws.send(JSON.stringify({ error: 'Token not found.' }));
             ws.close();
             return;
         }
 
-        // Verify JWT token and extract user ID
         let userId: number;
         try {
-            const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+            const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
             userId = decoded.id;
         } catch (err) {
+            console.log(err)
             ws.send(JSON.stringify({ error: 'Invalid token.' }));
             ws.close();
             return;
         }
 
-        // Fetch user from the database
         const user = await prismaClient.user.findUnique({ where: { id: userId } });
 
         if (!user) {
@@ -186,16 +199,13 @@ export const setupWebSocketServer = (server: Server) => {
                 const parsedMessage = JSON.parse(message);
                 const content = parsedMessage.content;
 
-                // Extract recipientId from query parameters
-                const recipientId = parseInt(new URLSearchParams(request.url.split('?')[1]).get('recipientId') || '', 10);
+               const recipientId = parsedMessage.recipientId;
 
-                // Check if recipientId and content are valid
                 if (!recipientId || !content) {
                     ws.send(JSON.stringify({ error: 'Invalid message format. Must include recipientId and content.' }));
                     return;
                 }
 
-                // Find the recipient's client connection
                 const recipientClient = clients.get(recipientId);
 
                 if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
