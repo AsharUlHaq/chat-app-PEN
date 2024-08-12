@@ -130,7 +130,6 @@ import { chat } from "@prisma/client";
 export async function createOrGetChat(senderId: number, receiverId: number): Promise<chat> {
     const conversationId = senderId + receiverId;
 
-  
     const existingChat = await prisma.chat.findFirst({
         where: {
             conversationId: conversationId,
@@ -144,7 +143,6 @@ export async function createOrGetChat(senderId: number, receiverId: number): Pro
     if (existingChat) {
         return existingChat;
     }
-
    
     const chat = await prisma.chat.create({
         data: {
@@ -163,14 +161,3 @@ export async function createOrGetChat(senderId: number, receiverId: number): Pro
     return chat;
 }
 
-export async function saveMessage(chatId: number, senderId: number, content: string) {
-    const message = await prisma.message.create({
-        data: {
-            chatId: chatId,
-            senderId: senderId,
-            content: content,
-        },
-    });
-
-    return message;
-}
