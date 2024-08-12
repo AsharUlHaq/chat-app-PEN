@@ -29,14 +29,3 @@ interface ICreateUser {
     }
   }
 
-  export async function findUserByEmail(email: string) {
-    const user = await prisma.user.findUnique({ where: { email: email } });
-    return user;
-  }
-  
-  export async function findUserById(id: number) {
-    const userId = await prisma.user.findUnique({ where: { id } });
-    if (!userId) throw new Error(`User at id:${id} not exist`);
-    return userId;
-  }
-  
