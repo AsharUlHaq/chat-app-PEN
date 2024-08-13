@@ -27,7 +27,7 @@
 
 //     console.log('WebSocket server running at ws://localhost:5000');
 // };
-
+//--------------------------------------------------------------------------------------------------------------------------------
 
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
@@ -53,7 +53,7 @@ export const setupWebSocketServer = (server: Server) => {
     wss.on('connection', async (ws: WebSocket, request: any) => {
         const tokenParam = request.url.split("?")[1] as string | undefined;
         if(!tokenParam){
-            ws.send(JSON.stringify({ error: 'Token not found.' }));
+            ws.send(JSON.stringify({status:404, message:'Token not found.', data: null, success: false }));
             ws.close();
             return;
         }
@@ -61,14 +61,14 @@ export const setupWebSocketServer = (server: Server) => {
         const splitedToken = tokenParam.split("=");
         const key = splitedToken[0];
         if(key !== "token"){
-            ws.send(JSON.stringify({ error: 'Token not found.' }));
+            ws.send(JSON.stringify({ status:404, message:'Token not found.', data: null, success: false  }));
             ws.close();
             return;
         }
         const token = splitedToken[1]; 
     
         if (!token) {
-            ws.send(JSON.stringify({ error: 'Token not found.' }));
+            ws.send(JSON.stringify({ status:404, message:'Token not found.', data: null, success: false }));
             ws.close();
             return;
         }
@@ -80,7 +80,7 @@ export const setupWebSocketServer = (server: Server) => {
         } 
         catch (err) {
             console.log(err)
-            ws.send(JSON.stringify({ error: 'Invalid token.' }));
+            ws.send(JSON.stringify({ status:403, message:'Invalid token.', data: null, success: false }));
             ws.close();
             return;
         }
@@ -88,7 +88,7 @@ export const setupWebSocketServer = (server: Server) => {
         const user = await prismaClient.user.findUnique({ where: { id: userId } });
 
         if (!user) {
-            ws.send(JSON.stringify({ error: 'User not found.' }));
+            ws.send(JSON.stringify({ status:404, message:'User not found.', data: null, success: false  }));
             ws.close();
             return;
         }
@@ -115,7 +115,9 @@ export const setupWebSocketServer = (server: Server) => {
                 
                 if (type === 'getMessages') {
                     const messages = await getChatMessages(user.id, recipientId);
-                    ws.send(JSON.stringify({
+                    ws.send(JSON.stringify({status:200,
+                        message: "success",
+                        data:{
                         type: 'previousMessages',
                         chat: chat.id,
                         messages: messages.map((msg) => ({
@@ -126,19 +128,23 @@ export const setupWebSocketServer = (server: Server) => {
                                 id: msg.sender.id,
                                 username: msg.sender.username,
                             },
-                        })),
+                        }))},
+                        success: true
                     }));
                     return;
                 }
                
                 if (!recipientId || !content) {
-                    ws.send(JSON.stringify({ error: 'Invalid message format. Must include recipientId and content.' }));
+                    ws.send(JSON.stringify({ status: 403, message: 'Invalid message format. Must include recipientId and content.', data: null, success:false }));
                     return;
                 }
 
                 const recipientClient = clients.get(recipientId);
                 if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
                     recipientClient.send(JSON.stringify({
+                        status: 200,
+                        message: "success",
+                        data:{
                         chatId: chat.id,
                         message: {
                             id: savedMessage.id,
@@ -149,14 +155,16 @@ export const setupWebSocketServer = (server: Server) => {
                                 username: user.username,
                             },
                         },
-                    }));
+                },
+                        success: true
+            }));
                     console.log(`Message from ${user.username} (ID: ${user.id}) to ${recipientClient.username} (ID: ${recipientId}): ${content}`);
                 } else {
-                    ws.send(JSON.stringify({ error: 'Recipient not found or not connected.' }));
+                    ws.send(JSON.stringify({ status:404, message: 'Recipient not found or not connected.', data:null, success:false }));
                 }
             } catch (error:any) {
                 console.error(error);
-                ws.send(JSON.stringify({ error: 'Invalid message format.' }));
+                ws.send(JSON.stringify({status:403, message: 'Invalid message format.', data:null, success:false }));
             }
         });
 
