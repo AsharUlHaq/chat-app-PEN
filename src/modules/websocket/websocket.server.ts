@@ -34,7 +34,7 @@ import { Server } from 'http';
 import prisma from '../../utils/db.util';
 import jwt from 'jsonwebtoken'; 
 import { ENV } from '../../utils/env.util';
-import { createOrGetChat} from '../chat/chat.service';
+import { createOrGetChat, getChatMessages} from '../chat/chat.service';
 import { saveMessage } from '../message/message.service';
 
 const prismaClient = prisma;
@@ -75,7 +75,8 @@ export const setupWebSocketServer = (server: Server) => {
         try {
             const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
             userId = decoded.id;
-        } catch (err) {
+        } 
+        catch (err) {
             console.log(err)
             ws.send(JSON.stringify({ error: 'Invalid token.' }));
             ws.close();
@@ -104,7 +105,25 @@ export const setupWebSocketServer = (server: Server) => {
                 const parsedMessage = JSON.parse(message);
                 const content = parsedMessage.content;
                 const recipientId = parsedMessage.recipientId;
+                const type = parsedMessage.type;
 
+                if (type === 'getMessages') {
+                    const messages = await getChatMessages(user.id, recipientId);
+                    ws.send(JSON.stringify({
+                        type: 'previousMessages',
+                        messages: messages.map((msg) => ({
+                            id: msg.id,
+                            createdAt: msg.createdAt,
+                            content: msg.content,
+                            sender: {
+                                id: msg.sender.id,
+                                username: msg.sender.username,
+                            },
+                        })),
+                    }));
+                    return;
+                }
+                
                 if (!recipientId || !content) {
                     ws.send(JSON.stringify({ error: 'Invalid message format. Must include recipientId and content.' }));
                     return;

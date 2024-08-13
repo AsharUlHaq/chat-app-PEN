@@ -126,6 +126,7 @@
 
 import prisma from "../../utils/db.util";
 import { chat } from "@prisma/client";
+import { getAllMessages } from "../message/message.service";
 
 export async function createOrGetChat(senderId: number, receiverId: number): Promise<chat> {
     const conversationId = senderId + receiverId;
@@ -161,3 +162,29 @@ export async function createOrGetChat(senderId: number, receiverId: number): Pro
     return chat;
 }
 
+export async function getChatMessages(senderId: number, receiverId: number) {
+    const conversationId = senderId + receiverId;
+
+    // Retrieve the chat based on the conversationId
+    const chat = await prisma.chat.findFirst({
+        where: {
+            conversationId: conversationId,
+        },
+        include: {
+            messages: {
+                orderBy: {
+                    createdAt: 'asc', 
+                },
+                include: {
+                    sender: true, 
+                },
+            },
+        },
+    });
+
+    if (!chat) {
+        throw new Error('Chat not found');
+    }
+
+    return chat.messages;
+}

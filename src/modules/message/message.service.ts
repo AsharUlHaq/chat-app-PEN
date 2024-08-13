@@ -24,3 +24,16 @@ export async function saveMessage(chatId: number, senderId: number, content: str
     return message;
 }
 
+export async function getAllMessages(chatId: number){
+    const allMessages = await prisma.message.findMany({
+        select:{
+            chatId: true,
+            id: true,
+            content: true,
+            sender: true,
+            senderId: true
+        },
+        where:{chatId: chatId}
+})   
+return allMessages;
+}
