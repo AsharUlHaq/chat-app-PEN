@@ -78,9 +78,9 @@ export const setupWebSocketServer = (server: Server) => {
             const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
             userId = decoded.id;
         } 
-        catch (err) {
-            console.log(err)
-            ws.send(JSON.stringify({ status:403, message:'Invalid token.', data: null, success: false }));
+        catch (err:any) {
+            console.log(err.message)
+            ws.send(JSON.stringify({ status:403, message: err.message, data: null, success: false }));
             ws.close();
             return;
         }

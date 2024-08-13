@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
   res.send("WebSocket server is up and running!");
 });
 
+
 app.get("/",protect, (req, res) => {
   console.log("HTTP METHOD - " + req.method + " URL - " + req.url);
   //@ts-ignore

@@ -23,8 +23,8 @@ export async function getChatMessagesController(req: Request, res: Response) {
         try {
             const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
             senderId = decoded.id;
-        } catch (err) {
-            return res.status(401).json({ status: 401,message: 'Invalid or expired token',data:null, success:true });
+        } catch (err:any) {
+            return res.status(401).json({ status: 401,message: 'Invalid or expired token:',data:null, success:true });
         }
 
         const messages = await getChatMessages(senderId, parseInt(recipientId));
