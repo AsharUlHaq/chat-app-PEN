@@ -109,10 +109,15 @@ export const setupWebSocketServer = (server: Server) => {
                 const recipientId = parsedMessage.recipientId;
                 const type = parsedMessage.type;
                 
+                const chat = await createOrGetChat(user.id, recipientId);
+
+                const savedMessage = await saveMessage(chat.id, user.id, content);
+                
                 if (type === 'getMessages') {
                     const messages = await getChatMessages(user.id, recipientId);
                     ws.send(JSON.stringify({
                         type: 'previousMessages',
+                        chat: chat.id,
                         messages: messages.map((msg) => ({
                             id: msg.id,
                             createdAt: msg.createdAt,
@@ -130,10 +135,6 @@ export const setupWebSocketServer = (server: Server) => {
                     ws.send(JSON.stringify({ error: 'Invalid message format. Must include recipientId and content.' }));
                     return;
                 }
-
-                const chat = await createOrGetChat(user.id, recipientId);
-
-                const savedMessage = await saveMessage(chat.id, user.id, content);
 
                 const recipientClient = clients.get(recipientId);
                 if (recipientClient && recipientClient.readyState === WebSocket.OPEN) {
