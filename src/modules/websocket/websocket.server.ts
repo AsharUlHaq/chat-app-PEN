@@ -36,6 +36,8 @@ import jwt from 'jsonwebtoken';
 import { ENV } from '../../utils/env.util';
 import { createOrGetChat, getChatMessages} from '../chat/chat.service';
 import { saveMessage } from '../message/message.service';
+import { findUserById } from '../user/user.service';
+import { error } from 'console';
 
 const prismaClient = prisma;
 
@@ -106,7 +108,7 @@ export const setupWebSocketServer = (server: Server) => {
                 const content = parsedMessage.content;
                 const recipientId = parsedMessage.recipientId;
                 const type = parsedMessage.type;
-
+                
                 if (type === 'getMessages') {
                     const messages = await getChatMessages(user.id, recipientId);
                     ws.send(JSON.stringify({
@@ -123,7 +125,7 @@ export const setupWebSocketServer = (server: Server) => {
                     }));
                     return;
                 }
-                
+               
                 if (!recipientId || !content) {
                     ws.send(JSON.stringify({ error: 'Invalid message format. Must include recipientId and content.' }));
                     return;
@@ -151,8 +153,8 @@ export const setupWebSocketServer = (server: Server) => {
                 } else {
                     ws.send(JSON.stringify({ error: 'Recipient not found or not connected.' }));
                 }
-            } catch (error) {
-                console.error('Failed to parse or process message:', error);
+            } catch (error:any) {
+                console.error(error);
                 ws.send(JSON.stringify({ error: 'Invalid message format.' }));
             }
         });

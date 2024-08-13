@@ -1,10 +1,10 @@
-// import { Router } from "express";
-// // import { createChatHandler, getChatByIdHandler } from "./chat.controller";
-// import { protect } from "../../middlewares/auth.middleware";
+import { Router } from "express";
+import { protect } from "../../middlewares/auth.middleware";
+import { getChatMessagesController } from "./chat.controller";
 
-// const chatRoutes = Router();
+const chatRoutes = Router();
 
 // // chatRoutes.post("/create-chat", protect, createChatHandler);
-// // chatRoutes.get("/get-chat",protect,getChatByIdHandler);
+chatRoutes.get("/get-chat-messages/:recipientId",protect,getChatMessagesController);
 
-// export { chatRoutes };
+export { chatRoutes };

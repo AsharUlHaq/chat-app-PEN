@@ -22,97 +22,49 @@
 //     }
 // }
 //-----------------------------------------------------------------------------------------------------------
-// import { Request, Response } from "express";
-// import { createChat, findChatById, getAllChats } from "./chat.service";
-// import { createChatSchema } from "./chat.schema"; // Import the schema
-// export async function createChatHandler(req: Request, res: Response) {
-//     try {
-    
-//         const { userId, recipientId } = createChatSchema.parse(req.body);
+import { Request, Response } from 'express';
+import { getChatMessages } from './chat.service';
+import jwt from 'jsonwebtoken'; 
+import { ENV } from '../../utils/env.util'; 
 
-//         const conversationId = userId + recipientId;
+export async function getChatMessagesController(req: Request, res: Response) {
+    const { recipientId } = req.params;
 
-//         const chat = await createChat(conversationId, [userId, recipientId]);
+    if (!recipientId) {
+        return res.status(400).json({ error: 'Missing recipientId' });
+    }
 
-//         res.status(201).json({
-//             status: 201,
-//             message: "Chat created successfully",
-//             data: chat,
-//             success: true,
-//         });
-//     } catch (error: any) {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({ error: 'Authorization header missing' });
+        }
 
-//         if (error.name === 'ZodError') {
-//             const message = error.errors.map((err: any) => err.message).join(", ");
-//             console.error("Validation Error:", message);
-//             return res.status(400).json({
-//                 status: 400,
-//                 message: message,
-//                 data: null,
-//                 success: false,
-//             });
-//         }
+        const token = authHeader.split(' ')[1];
+        let senderId: number;
 
-//         console.error("Internal Server Error:", error.message);
-//         res.status(500).json({
-//             status: 500,
-//             message: "Internal Server Error",
-//             data: null,
-//             success: false,
-//         });
-//     }
-// }
+        try {
+            const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
+            senderId = decoded.id;
+        } catch (err) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
 
-// export async function getAllChatsHandler(req: Request, res: Response) {
-//     try {
+
+        const messages = await getChatMessages(senderId, parseInt(recipientId));
+
      
-//         const chats = await getAllChats();
+        res.status(200).json(messages.map((msg) => ({
+            id: msg.id,
+            createdAt: msg.createdAt,
+            content: msg.content,
+            sender: {
+                id: msg.sender.id,
+                username: msg.sender.username,
+            },
+        })));
+    } catch (error:any) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
-//         res.status(200).json({
-//             status: 200,
-//             message: "Chats retrieved successfully",
-//             data: chats,
-//             success: true,
-//         });
-//     } catch (error: any) {
-//         console.error("Internal Server Error:", error.message);
-//         res.status(500).json({
-//             status: 500,
-//             message: "Internal Server Error",
-//             data: null,
-//             success: false,
-//         });
-//     }
-// }
-
-// export async function getChatByIdHandler(req: Request, res: Response) {
-//     try {
-//         const chatId = parseInt(req.params.id, 10);
-
-//         const chat = await findChatById(chatId);
-
-//         if (!chat) {
-//             return res.status(404).json({
-//                 status: 404,
-//                 message: "Chat not found",
-//                 data: null,
-//                 success: false,
-//             });
-//         }
-
-//         res.status(200).json({
-//             status: 200,
-//             message: "Chat retrieved successfully",
-//             data: chat,
-//             success: true,
-//         });
-//     } catch (error: any) {
-//         console.error("Internal Server Error:", error.message);
-//         res.status(500).json({
-//             status: 500,
-//             message: "Internal Server Error",
-//             data: null,
-//             success: false,
-//         });
-//     }
-// }
