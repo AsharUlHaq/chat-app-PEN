@@ -41,6 +41,27 @@ export async function findUserByEmail(email: string) {
     });
     return allUsers;
 }
+
+export async function getLoggedInUser(userId: number) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      avatar: true,
+      createdAt: true,
+      updatedAt: true,
+      isActive: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return user;
+}
   
   // export async function getAllUsers() {
   //   const allUsers = await prisma.user.findMany({

@@ -6,6 +6,6 @@ const chatRoutes = Router();
 
 // // chatRoutes.post("/create-chat", protect, createChatHandler);
 chatRoutes.get("/get-chat-messages/:recipientId",protect,getChatMessagesController);
-chatRoutes.get("/get-user-specific-chat-messages/:recipientId", protect, getUserSpecificChatMessagesController);
+// chatRoutes.get("/get-user-specific-chat-messages/:recipientId", protect, getUserSpecificChatMessagesController);
 
 export { chatRoutes };

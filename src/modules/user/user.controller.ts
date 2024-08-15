@@ -1,5 +1,5 @@
 import { ZodError } from "zod";
-import { findUserById, getAllUsers } from "./user.service";
+import { findUserById, getAllUsers, getLoggedInUser } from "./user.service";
 import { Response, Request } from "express";
 import jwt from 'jsonwebtoken';
 import { ENV } from '../../utils/env.util';
@@ -12,7 +12,7 @@ export async function getAllUsersHandler(req: Request, res: Response) {
       //if (user.role != "") throw new Error("Access denied");
       const authHeader = req.headers.authorization;
     if (!authHeader) {
-        return res.status(401).json({ error: 'Authorization header missing' });
+        return res.status(401).json({status:401, message: 'Authorization header missing', data: null, success: false });
     }
 
     const token = authHeader.split(' ')[1];
@@ -21,8 +21,8 @@ export async function getAllUsersHandler(req: Request, res: Response) {
     try {
         const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
         currentUserId = decoded.id;
-    } catch (err) {
-        return res.status(401).json({ error: 'Invalid or expired token' });
+    } catch (err:any) {
+        return res.status(401).json({ status:401, message: err.message , data: null, success: false  });
     }
 
     try {
@@ -54,3 +54,13 @@ export async function getAllUsersHandler(req: Request, res: Response) {
       });
     }
   }
+
+export async function getLoggedInUserController(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId;
+    const user = await getLoggedInUser(userId);
+    res.status(200).json({status:200, message: "success", data:user, success:true});
+  } catch (error: any) {
+    res.status(500).json({ status:500, message: error.message, data:null, success:false });
+  }
+}
