@@ -74,3 +74,17 @@ export async function updateUserPassword(password: string, id: number) {
   });
 }
 
+export async function updateUser(
+  data: Prisma.UserUncheckedUpdateInput,
+  id: number
+) {
+  const existingUser = await findUserById(id);
+  if (!existingUser) throw new Error("User not Found");
+  await prisma.user.update({
+    data: {
+      username: data.username,
+      avatar: data.avatar
+    },
+    where: { id },
+  });
+}

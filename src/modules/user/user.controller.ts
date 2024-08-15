@@ -1,9 +1,9 @@
 import { ZodError } from "zod";
-import { findUserById, getAllUsers, getLoggedInUser, updateUserPassword } from "./user.service";
+import { findUserById, getAllUsers, getLoggedInUser, updateUser, updateUserPassword } from "./user.service";
 import { Response, Request } from "express";
 import jwt from 'jsonwebtoken';
 import { ENV } from '../../utils/env.util';
-import { updateUserPasswordSchema } from "./user.schema";
+import { updateUserPasswordSchema, updateUserSchema } from "./user.schema";
 import bcrypt from "bcrypt";
 
 export async function getAllUsersHandler(req: Request, res: Response) {
@@ -105,6 +105,36 @@ export async function updateUserPasswordHandler(req: Request, res: Response) {
       });
     }
     return res.status(400).json({
+      status: 400,
+      message: error.message,
+      data: null,
+      success: false,
+    });
+  }
+}
+
+export async function updateUserProfileHandler(req: Request, res: Response) {
+  try {
+    const currentUserId: number = (req as any).userId;
+    const data = updateUserSchema.parse(req.body);
+    const user = await updateUser(data, currentUserId);
+    res
+      .status(200)
+      .json({ status: 200, message: "Success", data: null, success: true });
+  } catch (error: any) {
+    if (error instanceof ZodError) {
+      const messageJSON = JSON.parse(error.message);
+      const message = `${messageJSON[0].path[0]} is ${messageJSON[0].message}`;
+      console.error(message);
+      return res.status(400).json({
+        status: 400,
+        message: message,
+        data: null,
+        success: false,
+      });
+    }
+    console.error(error.message);
+    res.status(400).json({
       status: 400,
       message: error.message,
       data: null,
