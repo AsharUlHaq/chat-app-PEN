@@ -20,19 +20,40 @@ export async function findUserByEmail(email: string) {
       }
     }
   }
-  
-  export async function getAllUsers() {
+
+  export async function getAllUsers(currentUserId: number) {
     const allUsers = await prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        avatar:true,
-        createdAt: true,
-        updatedAt: true,
-        isActive: true,
-      },
-      where: { role: "USER"  },
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            avatar: true,
+            createdAt: true,
+            updatedAt: true,
+            isActive: true,
+        },
+        where: {
+            role: "USER",
+            id: {
+                not: currentUserId, // Exclude the current user
+            },
+        },
     });
     return allUsers;
-  }
+}
+  
+  // export async function getAllUsers() {
+  //   const allUsers = await prisma.user.findMany({
+  //     select: {
+  //       id: true,
+  //       username: true,
+  //       email: true,
+  //       avatar:true,
+  //       createdAt: true,
+  //       updatedAt: true,
+  //       isActive: true,
+  //     },
+  //     where: { role: "USER"  },
+  //   });
+  //   return allUsers;
+  // }
