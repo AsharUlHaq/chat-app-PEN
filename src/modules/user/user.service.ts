@@ -35,7 +35,7 @@ export async function findUserByEmail(email: string) {
         where: {
             role: "USER",
             id: {
-                not: currentUserId, // Exclude the current user
+                not: currentUserId, 
             },
         },
     });
@@ -63,18 +63,14 @@ export async function getLoggedInUser(userId: number) {
   return user;
 }
   
-  // export async function getAllUsers() {
-  //   const allUsers = await prisma.user.findMany({
-  //     select: {
-  //       id: true,
-  //       username: true,
-  //       email: true,
-  //       avatar:true,
-  //       createdAt: true,
-  //       updatedAt: true,
-  //       isActive: true,
-  //     },
-  //     where: { role: "USER"  },
-  //   });
-  //   return allUsers;
-  // }
+export async function updateUserPassword(password: string, id: number) {
+  const existingUser = await findUserById(id);
+  if (!existingUser) throw new Error("User not found");
+  await prisma.user.update({
+    data: {
+      password: password,
+    },
+    where: { id },
+  });
+}
+
