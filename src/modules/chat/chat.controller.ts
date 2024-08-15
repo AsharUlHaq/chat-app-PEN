@@ -19,8 +19,8 @@ export async function getChatMessagesController(req: Request, res: Response) {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
-            return res.status(401).json({
-                status: 401, 
+            return res.status(404).json({
+                status: 404, 
                 message: 'Authorization header not found', 
                 data: null, 
                 success: false 
