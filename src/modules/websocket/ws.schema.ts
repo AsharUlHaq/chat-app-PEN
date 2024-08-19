@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import z from "zod"
 
-const sendMessageSchema = z.object({
-    content: z.string().min(1, { message: "Content must be a non-empty string." }),
-    recipientId: z.number().int().positive({ message: "Recipient ID must be a positive integer." }),
-});
+export const messageSchema = z.object({
+    content: z.string().min(1, 'Content cannot be empty'),
+    recipientId: z.number().positive('Recipient ID must be a positive number'),
+})
 
-export { sendMessageSchema };
+export type messageSchemaType = z.infer<typeof messageSchema>

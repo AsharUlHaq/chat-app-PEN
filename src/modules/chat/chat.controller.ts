@@ -4,15 +4,79 @@ import { getChatMessages, getUserSpecificChatMessages } from './chat.service';
 import jwt from 'jsonwebtoken'; 
 import { ENV } from '../../utils/env.util'; 
 
+// export async function getChatMessagesController(req: Request, res: Response) {
+//     const { recipientId } = req.params;
+
+//     if (!recipientId) {
+//         return res.status(404).json({
+//             status: 404, 
+//             message: 'Recipient ID not found', 
+//             data: null, 
+//             success: false 
+//         });
+//     }
+
+//     try {
+//         const authHeader = req.headers.authorization;
+//         if (!authHeader) {
+//             return res.status(404).json({
+//                 status: 404, 
+//                 message: 'Authorization header not found', 
+//                 data: null, 
+//                 success: false 
+//             });
+//         }
+
+//         const token = authHeader.split(' ')[1];
+//         let senderId: number;
+
+//         try {
+//             const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
+//             senderId = decoded.id;
+//         } catch (err:any) {
+//             return res.status(401).json({ 
+//                 status: 401,
+//                 message: 'Invalid or expired token',
+//                 data: null, 
+//                 success: false 
+//             });
+//         }
+
+//         const messages = await getChatMessages(senderId, parseInt(recipientId));
+
+//         res.status(200).json({
+//             status: 200,
+//             message: 'Success', 
+//             data: messages.map((msg) => ({
+//                 id: msg.id,
+//                 createdAt: msg.createdAt,
+//                 content: msg.content,
+//                 sender: {
+//                     id: msg.sender.id,
+//                     username: msg.sender.username,
+//                 },
+//             })),
+//             success: true
+//         });
+//     } catch (error:any) {
+//         res.status(400).json({
+//             status: 400, 
+//             message: "Missing conversation data or argument. Unable to fetch messages.", 
+//             data: null, 
+//             success: false 
+//         });
+//     }
+// }
+
 export async function getChatMessagesController(req: Request, res: Response) {
     const { recipientId } = req.params;
 
     if (!recipientId) {
         return res.status(404).json({
-            status: 404, 
-            message: 'Recipient ID not found' , 
-            data: null, 
-            success: false 
+            status: 404,
+            message: 'Recipient ID not found',
+            data: null,
+            success: false
         });
     }
 
@@ -20,10 +84,10 @@ export async function getChatMessagesController(req: Request, res: Response) {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
             return res.status(404).json({
-                status: 404, 
-                message: 'Authorization header not found', 
-                data: null, 
-                success: false 
+                status: 404,
+                message: 'Authorization header not found',
+                data: null,
+                success: false
             });
         }
 
@@ -33,20 +97,29 @@ export async function getChatMessagesController(req: Request, res: Response) {
         try {
             const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
             senderId = decoded.id;
-        } catch (err:any) {
-            return res.status(401).json({ 
+        } catch (err: any) {
+            return res.status(401).json({
                 status: 401,
                 message: 'Invalid or expired token',
-                data: null, 
-                success: false 
+                data: null,
+                success: false
             });
         }
 
         const messages = await getChatMessages(senderId, parseInt(recipientId));
 
-        res.status(200).json({
+        if (!messages || messages.length === 0) {
+            return res.status(200).json({
+                status: 200,
+                message: 'No messages found, initializing new chat...',
+                data: [],
+                success: true
+            });
+        }
+
+        return res.status(200).json({
             status: 200,
-            message: 'Success', 
+            message: 'Success',
             data: messages.map((msg) => ({
                 id: msg.id,
                 createdAt: msg.createdAt,
@@ -58,12 +131,13 @@ export async function getChatMessagesController(req: Request, res: Response) {
             })),
             success: true
         });
-    } catch (error:any) {
-        res.status(400).json({
-            status: 400, 
-            message: "Missing conversation data or argument. Unable to fetch messages.", 
-            data: null, 
-            success: false 
+
+    } catch (error: any) {
+        return res.status(400).json({
+            status: 400,
+            message: error.message || "Missing conversation data or argument. Unable to fetch messages.",
+            data: null,
+            success: false
         });
     }
 }
@@ -78,7 +152,7 @@ export async function getUserSpecificChatMessagesController(req: Request, res: R
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
-            return res.status(401).json({ status: 404 ,message: 'Authorization header missing', data: null, success:false });
+            return res.status(404).json({ status: 404 ,message: 'Authorization header missing', data: null, success:false });
         }
 
         const token = authHeader.split(' ')[1];
@@ -87,7 +161,7 @@ export async function getUserSpecificChatMessagesController(req: Request, res: R
         try {
             const decoded: any = jwt.verify(token, ENV.JWT_SECRET!);
             senderId = decoded.id;
-        } catch (err) {
+        } catch (err:any) {
             return res.status(401).json({status:401 , message: 'Invalid or expired token', data:null, success:false });
         }
 

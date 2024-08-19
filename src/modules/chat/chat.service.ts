@@ -44,6 +44,32 @@ export async function createOrGetChat(senderId: number, receiverId: number): Pro
     return chat;
 }
 
+// export async function getChatMessages(senderId: number, receiverId: number) {
+//     const conversationId = senderId + receiverId;
+
+//     const chat = await prisma.chat.findFirst({
+//         where: {
+//             conversationId: conversationId,
+//         },
+//         include: {
+//             messages: {
+//                 orderBy: {
+//                     createdAt: 'asc', 
+//                 },
+//                 include: {
+//                     sender: true, 
+//                 },
+//             },
+//         },
+//     });
+
+//     if (!chat) {
+//         throw new Error('Chat not found');
+//     }
+
+//     return chat.messages;
+// }
+
 export async function getChatMessages(senderId: number, receiverId: number) {
     const conversationId = senderId + receiverId;
 
@@ -54,21 +80,22 @@ export async function getChatMessages(senderId: number, receiverId: number) {
         include: {
             messages: {
                 orderBy: {
-                    createdAt: 'asc', 
+                    createdAt: 'asc',
                 },
                 include: {
-                    sender: true, 
+                    sender: true,
                 },
             },
         },
     });
 
     if (!chat) {
-        throw new Error('Chat not found');
+        return [];  
     }
 
     return chat.messages;
 }
+
 
 export async function getUserSpecificChatMessages(senderId: number, receiverId: number) {
     const conversationId = senderId + receiverId;

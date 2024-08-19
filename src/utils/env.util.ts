@@ -3,5 +3,5 @@ dotenv.config();
 
 export const ENV = {
   PORT: process.env.PORT ?? 5000,
-  JWT_SECRET: process.env.JWT_SECRET ?? "SECRET", //JWT Secret key
+  JWT_SECRET: process.env.JWT_SECRET ?? "SECRET", 
 };
