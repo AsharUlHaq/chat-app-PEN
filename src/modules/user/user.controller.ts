@@ -47,7 +47,7 @@ export async function getAllUsersHandler(req: Request, res: Response) {
       });
     } catch (error: any) {
       console.error(error.message);
-      res.status(500).json({
+      res.status(400).json({
         status: 400, 
         message: error.message,
         data: null,
@@ -71,7 +71,7 @@ export async function getLoggedInUserController(req: Request, res: Response) {
     const user = await getLoggedInUser(userId);
     res.status(200).json({status:200, message: "success", data:user, success:true});
   } catch (error: any) {
-    res.status(500).json({ status:500, message: error.message, data:null, success:false });
+    res.status(400).json({ status:400, message: error.message, data:null, success:false });
   }
 }
 
