@@ -10,7 +10,7 @@ export async function getChatMessagesController(req: Request, res: Response) {
     if (!recipientId) {
         return res.status(404).json({
             status: 404, 
-            message: 'Recipient ID not found', 
+            message: 'Recipient ID not found' , 
             data: null, 
             success: false 
         });
