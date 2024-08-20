@@ -13,19 +13,22 @@ enum UserRole {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  role      UserRole @default(USER)
-  updatedAt DateTime @default(now()) @updatedAt
-  username  String
-  email     String   @unique
-  password  String
-  avatar    String
+  id            Int       @id @default(autoincrement())
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  role          UserRole  @default(USER)
+  updatedAt     DateTime  @default(now()) @updatedAt
+  username      String
+  email         String    @unique
+  password      String
+  avatar        String
+  otpExpiration DateTime?
 
   chats    chat[]    @relation("UserChats")
   messages message[] @relation("UserMessages")
   Session  Session[]
+
+  OTP OTP[]
 }
 
 model chat {
@@ -47,6 +50,15 @@ model message {
   chat      chat     @relation(fields: [chatId], references: [id])
   senderId  Int
   sender    User     @relation(fields: [senderId], references: [id], name: "UserMessages")
+}
+
+model OTP {
+  id         Int      @id @default(autoincrement())
+  otp        String
+  expiration DateTime
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  createdAt  DateTime @default(now())
 }
 
 model Session {

@@ -6,6 +6,7 @@ import { userSignInSchema, userSignUpSchema } from "./auth.schema";
 import { SignUp } from "./auth.service";
 import { findUserByEmail } from "../user/user.service";
 import bcrypt from "bcrypt";
+import prisma from "../../utils/db.util";
 
 export async function signUpUserHandler(req: Request, res: Response) {
     try {
@@ -76,3 +77,5 @@ export async function signUpUserHandler(req: Request, res: Response) {
         });
       }
   }
+
+ 
