@@ -1,10 +1,11 @@
 import { ZodError } from "zod";
-import { findUserById, getAllUsers, getLoggedInUser, updateUser, updateUserPassword } from "./user.service";
+import { exportUsersToCSV, exportUsersToExcel, findUserById, getAllUsers, getLoggedInUser, updateUser, updateUserPassword } from "./user.service";
 import { Response, Request } from "express";
 import jwt from 'jsonwebtoken';
 import { ENV } from '../../utils/env.util';
 import { updateUserPasswordSchema, updateUserSchema } from "./user.schema";
 import bcrypt from "bcrypt";
+import { error } from "console";
 
 export async function getAllUsersHandler(req: Request, res: Response) {
   try {
@@ -141,4 +142,35 @@ export async function updateUserProfileHandler(req: Request, res: Response) {
       success: false,
     });
   }
+}
+
+export async function exportUsersController(req: Request, res: Response) {
+  const { format } = req.query;
+
+  try {
+      let filePath: string;
+
+      if (format === 'excel') {
+          filePath = await exportUsersToExcel();
+          res.download(filePath, 'users.xlsx');
+      } else if (format === 'csv') {
+          filePath = await exportUsersToCSV();
+          res.download(filePath, 'users.csv');
+      } else {
+          res.status(400).json({
+              status: 400,
+              message: "Invalid format. Use 'excel' or 'csv'.",
+              data: null,
+              success: false,
+          });
+      }
+  } catch (error: any) {
+      res.status(500).json({
+          status: 500,
+          message: error.message || "Failed to export users.",
+          data: null,
+          success: false,
+      });
+  }
+  
 }

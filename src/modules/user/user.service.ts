@@ -1,5 +1,11 @@
 import prisma from "../../utils/db.util";
 import { Prisma } from "@prisma/client";
+import * as XLSX from 'xlsx';
+import { createObjectCsvWriter } from 'csv-writer';
+import fs from 'fs';
+import ExcelJS from 'exceljs';
+import { format, parse } from 'fast-csv';
+import { Readable } from 'stream';
 
 export async function findUserByEmail(email: string) {
     const user = await prisma.user.findUnique({ where: { email: email } });
@@ -87,4 +93,55 @@ export async function updateUser(
     },
     where: { id },
   });
+}
+
+export async function exportUsersToExcel() {
+  const users = await prisma.user.findMany({
+      select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+      }
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(users);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+
+  const filePath = './exports/users.xlsx';
+  XLSX.writeFile(workbook, filePath);
+
+  return filePath;
+}
+
+export async function exportUsersToCSV() {
+  const users = await prisma.user.findMany({
+      select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+      }
+  });
+
+  const csvWriter = createObjectCsvWriter({
+      path: './exports/users.csv',
+      header: [
+          { id: 'id', title: 'ID' },
+          { id: 'username', title: 'Username' },
+          { id: 'email', title: 'Email' },
+          { id: 'role', title: 'Role' },
+          { id: 'createdAt', title: 'Created At' },
+          { id: 'updatedAt', title: 'Updated At' },
+      ]
+  });
+
+  await csvWriter.writeRecords(users);
+
+  return './exports/users.csv';
 }

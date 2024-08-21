@@ -1,6 +1,7 @@
 {
     "prettier.requireConfig": true,
     "cSpell.words": [
+        "exceljs",
         "splited",
         "uuidv"
     ]
