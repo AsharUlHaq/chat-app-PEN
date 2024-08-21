@@ -40,9 +40,9 @@ export class ResetPasswordController {
       const { email, newPassword } = req.body;
 
       await resetPasswordService.resetPassword(email, newPassword);
-      return res.status(200).json({ message: 'Password reset successfully.' });
+      return res.status(200).json({status:200, message: 'Password reset successfully.',data:null,success:true });
     } catch (error: any) {
-      return res.status(400).json({ error: error.errors || error.message });
+      return res.status(400).json({status:200, message: error.errors || error.message, data:null, success:true });
     }
   }
 }
