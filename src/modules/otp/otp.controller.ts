@@ -94,7 +94,7 @@ export class OTPController {
       await otpService.generateOtp(email);
       return res.status(200).json({status:200, message: 'OTP sent to your email.', data: null, success:true });
     } catch (error: any) {
-      return res.status(400).json({status:400, message: error.errors || error.message, data: null, success:false });
+      return res.status(400).json({status:400, message: "Unable to create OTP. The provided email address seems to be invalid or not registered", data: null, success:false });
     }
   }
 
