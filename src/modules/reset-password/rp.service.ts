@@ -29,22 +29,80 @@
 // }
 
 // src/auth/auth.service.ts
+//----------------------------------------------------------------------------
+// import { PrismaClient } from '@prisma/client';
+// import bcrypt from 'bcrypt';
+
+// const prisma = new PrismaClient();
+
+// export class ResetPasswordService {
+//   async resetPassword(email: string, newPassword: string): Promise<void> {
+//     // Hash the new password
+//     const saltRounds = 10;
+//     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+//     // Update the user's password in the database
+//     await prisma.user.update({
+//       where: { email },
+//       data: { password: hashedPassword },
+//     });
+//   }
+// }
+//-----------------------------------------------------------------------------
+// src/reset-password/rp.service.ts
+
+// src/reset-password/rp.service.ts
+
+// src/reset-password/rp.service.ts
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { addMinutes, isAfter } from 'date-fns';
+import crypto from 'crypto';
+import { EmailService } from '../email/email.service';
 
 const prisma = new PrismaClient();
 
 export class ResetPasswordService {
-  async resetPassword(email: string, newPassword: string): Promise<void> {
-    // Hash the new password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+  async requestPasswordReset(email: string): Promise<void> {
+    const token = crypto.randomBytes(20).toString('hex');
+    const expiration = addMinutes(new Date(), 10);
 
-    // Update the user's password in the database
-    await prisma.user.update({
+    await prisma.resetToken.deleteMany({
       where: { email },
+    });
+
+
+    await prisma.resetToken.create({
+      data: {
+        email,
+        token,
+        expiration,
+      },
+    });
+
+    await EmailService.sendResetPasswordLink(email, token);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+ 
+    const tokenRecord = await prisma.resetToken.findUnique({
+      where: { token },
+    });
+
+    if (!tokenRecord || isAfter(new Date(), tokenRecord.expiration)) {
+      throw new Error('Invalid or expired reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { email: tokenRecord.email },
       data: { password: hashedPassword },
+    });
+
+    await prisma.resetToken.delete({
+      where: { token },
     });
   }
 }

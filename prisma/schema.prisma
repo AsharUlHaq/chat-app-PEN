@@ -61,6 +61,13 @@ model OTP {
   createdAt  DateTime @default(now())
 }
 
+model ResetToken {
+  id         Int      @id @default(autoincrement())
+  email      String
+  token      String   @unique
+  expiration DateTime
+}
+
 model Session {
   userId       Int    @id
   user         User   @relation(fields: [userId], references: [id])
