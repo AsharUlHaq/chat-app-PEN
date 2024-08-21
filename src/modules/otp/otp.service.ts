@@ -77,10 +77,10 @@ const prisma = new PrismaClient();
 
 export class OTPService {
   async generateOtp(email: string): Promise<void> {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit numeric OTP
-    const expiration = addMinutes(new Date(), 10); // OTP expires in 10 minutes
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+    const expiration = addMinutes(new Date(), 10); 
 
-    // Save OTP to the database
+  
     await prisma.oTP.create({
       data: {
         otp,
@@ -93,24 +93,23 @@ export class OTPService {
       },
     });
 
-    // Send OTP via email
     await EmailService.sendOtp(email, otp);
   }
 
   async findUserByOtp(otp: string) {
     const otpRecord = await prisma.oTP.findFirst({
       where: { otp },
-      include: { user: true }, // Include associated user
+      include: { user: true }, 
     });
 
     if (!otpRecord) return null;
 
     if (isAfter(new Date(), otpRecord.expiration)) {
-      // OTP expired
+ 
       await prisma.oTP.delete({ where: { id: otpRecord.id } });
       return null;
     }
 
-    return otpRecord.user; // Return the user associated with this OTP
+    return otpRecord.user; 
   }
 }
