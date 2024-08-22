@@ -62,16 +62,23 @@ import crypto from 'crypto';
 import { EmailService } from '../email/email.service';
 
 const prisma = new PrismaClient();
-
 export class ResetPasswordService {
   async requestPasswordReset(email: string): Promise<void> {
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new Error('Email address is not registered.');
+    }
+
     const token = crypto.randomBytes(20).toString('hex');
     const expiration = addMinutes(new Date(), 10);
 
     await prisma.resetToken.deleteMany({
       where: { email },
     });
-
 
     await prisma.resetToken.create({
       data: {
@@ -85,7 +92,6 @@ export class ResetPasswordService {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
- 
     const tokenRecord = await prisma.resetToken.findUnique({
       where: { token },
     });

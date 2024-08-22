@@ -49,9 +49,53 @@
 //---------------------------------------------------------------------------
 // src/reset-password/rp.controller.ts
 
+// import { Request, Response } from 'express';
+// import { ResetPasswordService } from './rp.service';
+// import { requestPasswordResetSchema, resetPasswordSchema } from './rp.schema';
+// import { ZodError } from 'zod';
+
+// const resetPasswordService = new ResetPasswordService();
+
+// export class ResetPasswordController {
+//   async requestPasswordReset(req: Request, res: Response) {
+//     try {
+//       requestPasswordResetSchema.parse(req.body);
+//       const { email } = req.body;
+//       await resetPasswordService.requestPasswordReset(email);
+//       return res.status(200).json({ status: 200, message: 'Reset password link sent to your email.',data:null, success: true });
+//     } catch (error: any) {
+//     if (error instanceof ZodError) {
+//       const messageJSON = JSON.parse(error.message);
+//       const message = `${messageJSON[0].path[0]} is ${messageJSON[0].message}`;
+//       console.error(message);
+//       return res
+//         .status(400)
+//         .json({ status: 400, message: message, data: null, success: false });
+//     }
+  
+//     {
+//       return res.status(400).json({ status: 400, message: error.message,data:null, success: false });
+//     }
+//   }
+//   }
+
+//   async resetPassword(req: Request, res: Response) {
+//     try {
+//       resetPasswordSchema.parse(req.body);
+//       const { token, newPassword } = req.body;
+//       await resetPasswordService.resetPassword(token, newPassword);
+//       return res.status(200).json({ status: 200, message: 'Password reset successfully.',data:null, success: true });
+//     } catch (error: any) {
+//       return res.status(400).json({ status: 400, message: error.message,data:null, success: false });
+//     }
+//   }
+// }
+
+//-------------------------------------------------------
 import { Request, Response } from 'express';
 import { ResetPasswordService } from './rp.service';
 import { requestPasswordResetSchema, resetPasswordSchema } from './rp.schema';
+import { ZodError } from 'zod';
 
 const resetPasswordService = new ResetPasswordService();
 
@@ -61,9 +105,19 @@ export class ResetPasswordController {
       requestPasswordResetSchema.parse(req.body);
       const { email } = req.body;
       await resetPasswordService.requestPasswordReset(email);
-      return res.status(200).json({ status: 200, message: 'Reset password link sent to your email.',data:null, success: true });
+      return res.status(200).json({ status: 200, message: 'Reset password link sent to your email.', data: null, success: true });
     } catch (error: any) {
-      return res.status(400).json({ status: 400, message: error.message,data:null, success: false });
+      if (error instanceof ZodError) {
+        const messageJSON = JSON.parse(error.message);
+        const message = `${messageJSON[0].path[0]} is ${messageJSON[0].message}`;
+        console.error(message);
+        return res
+          .status(400)
+          .json({ status: 400, message: message, data: null, success: false });
+      } else {
+        console.error(error.message);
+        return res.status(400).json({ status: 400, message: error.message, data: null, success: false });
+      }
     }
   }
 
@@ -72,9 +126,9 @@ export class ResetPasswordController {
       resetPasswordSchema.parse(req.body);
       const { token, newPassword } = req.body;
       await resetPasswordService.resetPassword(token, newPassword);
-      return res.status(200).json({ status: 200, message: 'Password reset successfully.',data:null, success: true });
+      return res.status(200).json({ status: 200, message: 'Password reset successfully.', data: null, success: true });
     } catch (error: any) {
-      return res.status(400).json({ status: 400, message: error.message,data:null, success: false });
+      return res.status(400).json({ status: 400, message: error.message, data: null, success: false });
     }
   }
 }
