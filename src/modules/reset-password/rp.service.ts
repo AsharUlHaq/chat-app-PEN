@@ -27,8 +27,29 @@
 //     return true;
 //   }
 // }
-
+//----------------------------------------------------------
 // src/auth/auth.service.ts
+
+// import { PrismaClient } from '@prisma/client';
+// import bcrypt from 'bcrypt';
+
+// const prisma = new PrismaClient();
+
+// export class ResetPasswordService {
+//   async resetPassword(email: string, newPassword: string): Promise<void> {
+//     // Hash the new password
+//     const saltRounds = 10;
+//     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+//     // Update the user's password in the database
+//     await prisma.user.update({
+//       where: { email },
+//       data: { password: hashedPassword },
+//     });
+//   }
+// }
+//--------------------------------------------------------------
+// src/resetpassword/resetpassword.service.ts
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
@@ -36,12 +57,25 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 export class ResetPasswordService {
+  async validateOtp(email: string, otp: string): Promise<boolean> {
+    const otpRecord = await prisma.oTP.findFirst({
+      where: { otp, user: { email } },
+    });
+
+    if (!otpRecord) return false;
+
+    if (new Date() > otpRecord.expiration) {
+      await prisma.oTP.delete({ where: { id: otpRecord.id } });
+      return false;
+    }
+
+    return true;
+  }
+
   async resetPassword(email: string, newPassword: string): Promise<void> {
-    // Hash the new password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    // Update the user's password in the database
     await prisma.user.update({
       where: { email },
       data: { password: hashedPassword },

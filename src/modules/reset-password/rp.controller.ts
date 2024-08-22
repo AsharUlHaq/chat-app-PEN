@@ -26,6 +26,27 @@
 //     }
 //   }
 // }
+//--------------------------------------------------------------------------------------
+// import { Request, Response } from 'express';
+// import { ResetPasswordService } from './rp.service';
+// import { resetPasswordSchema } from './rp.schema';
+
+// const resetPasswordService = new ResetPasswordService();
+
+// export class ResetPasswordController {
+//   async resetPassword(req: Request, res: Response) {
+//     try {
+//       resetPasswordSchema.parse(req.body);
+//       const { email, newPassword } = req.body;
+//       await resetPasswordService.resetPassword(email, newPassword);
+//       return res.status(200).json({status:200, message: 'Password reset successfully.',data:null,success:true });
+//     } catch (error: any) {
+//       return res.status(400).json({status:200, message: error.errors || error.message, data:null, success:true });
+//     }
+//   }
+// }
+//-----------------------------------------------------------------------------------
+// src/resetpassword/resetpassword.controller.ts
 
 import { Request, Response } from 'express';
 import { ResetPasswordService } from './rp.service';
@@ -37,12 +58,19 @@ export class ResetPasswordController {
   async resetPassword(req: Request, res: Response) {
     try {
       resetPasswordSchema.parse(req.body);
-      const { email, newPassword } = req.body;
-
+      const { email, otp, newPassword } = req.body;
+      
+      // Cross-check OTP and email
+      const isValid = await resetPasswordService.validateOtp(email, otp);
+      if (!isValid) {
+        return res.status(400).json({ status: 400, message: 'Invalid or expired OTP.', data: null, success: false });
+      }
+      
+      // Reset the password
       await resetPasswordService.resetPassword(email, newPassword);
-      return res.status(200).json({status:200, message: 'Password reset successfully.',data:null,success:true });
+      return res.status(200).json({ status: 200, message: 'Password reset successfully.', data: null, success: true });
     } catch (error: any) {
-      return res.status(400).json({status:200, message: error.errors || error.message, data:null, success:true });
+      return res.status(400).json({ status: 400, message: error.errors || error.message, data: null, success: false });
     }
   }
 }
