@@ -12,6 +12,12 @@ enum UserRole {
   USER
 }
 
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id            Int       @id @default(autoincrement())
   isActive      Boolean   @default(true)
@@ -27,8 +33,13 @@ model User {
   chats    chat[]    @relation("UserChats")
   messages message[] @relation("UserMessages")
   Session  Session[]
+  OTP      OTP[]
 
-  OTP OTP[]
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+
+  friendsInitiated Friendship[] @relation("InitiatedFriendships")
+  friendsReceived  Friendship[] @relation("ReceivedFriendships")
 }
 
 model chat {
@@ -65,4 +76,28 @@ model Session {
   userId       Int    @id
   user         User   @relation(fields: [userId], references: [id])
   refreshToken String @unique
+}
+
+model FriendRequest {
+  id         Int                 @id @default(autoincrement())
+  status     FriendRequestStatus @default(PENDING)
+  senderId   Int
+  receiverId Int
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @default(now()) @updatedAt
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id])
+}
+
+model Friendship {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+  createdAt DateTime @default(now())
+
+  user   User @relation("InitiatedFriendships", fields: [userId], references: [id])
+  friend User @relation("ReceivedFriendships", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
 }

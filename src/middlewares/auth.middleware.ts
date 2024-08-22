@@ -16,7 +16,7 @@ export async function protect(req: Request, res: Response, next: NextFunction) {
     const userId = payload.id;
     (req as any)["userId"] = userId;
     next()
-  } catch (error: any) {
+  } catch (error: any) { 
     res.status(401).json({
       status: 401,
       message: "Unauthorized",
